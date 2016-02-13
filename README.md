@@ -5,5 +5,9 @@ This is really simple and the Asset Management creates automatically the thumbna
 
 http://www.pitiwazou.com/asset-management/
 
-Please do not share this link.
+You can download the last stable Build in the Master Branch and try the Dev builds in the Development Branch.
 
+This Github is for customers only, please do not share this link.
+
+
+Use Blender 2.76B installed and zip version.
