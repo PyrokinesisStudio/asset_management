@@ -27,9 +27,12 @@ from bpy.types import Operator
 from os.path import join, isfile, isdir
 from os import remove, listdir
 from . preview_utils import register_AssetM_pcoll_preview
-from . import_utils import generate_thumbnail
+from . import_utils import generate_thumbnail, preview_add_to_selection
 
-#---------------------- EDITING LIBRARY TOOLS ---------------------- 
+# -----------------------------------------------------------------------------
+#   EDITING LIBRARY TOOLS
+# -----------------------------------------------------------------------------
+
 
 class AddInAssetManagement(Operator):
     bl_idname = "object.add_in_asset_management"
@@ -355,8 +358,11 @@ class ChangeNameInAssetManagement(Operator):
         
         return {'FINISHED'} 
     
-             
-#---------------------- FAVORITES ---------------------- 
+
+# -----------------------------------------------------------------------------
+#   FAVORITES
+# -----------------------------------------------------------------------------
+
 
 class AddToFavorites(Operator):
     ''' Add the asset to your favorites '''
@@ -404,8 +410,11 @@ class RemoveFromFavorites(Operator):
       
         return {'FINISHED'}
     
+    
+# -----------------------------------------------------------------------------
+#   ASSET MANAGEMENT TOOLS
+# -----------------------------------------------------------------------------
 
-#---------------------- APPENDING TOOLS ---------------------- 
 
 class AssetLink(bpy.types.Operator):
     bl_idname = "object.asset_m_link"
@@ -610,7 +619,7 @@ class DebugPreview(bpy.types.Operator):
         return {'FINISHED'} 
     
     
-class Add_Cam_OGL(bpy.types.Operator):
+class AddCamOGL(bpy.types.Operator):
     bl_idname = "object.add_cam_ogl_render"
     bl_label = "Add Cam "
     bl_description = "Add a Cam for OpenGl Rendering"
@@ -665,7 +674,7 @@ class Add_Cam_OGL(bpy.types.Operator):
             bpy.context.scene.objects.active = active_obj
         return {"FINISHED"}
 
-class Delete_Cam_OGL(bpy.types.Operator):
+class DeleteCamOGL(bpy.types.Operator):
     bl_idname = "object.delete_cam_ogl_render"
     bl_label = "Delete"
     bl_description = "Delete the OGL camera"
@@ -705,3 +714,15 @@ def background_alpha(self, context):
         alpha_mode = 'SKY'
  
     bpy.context.scene.render.alpha_mode = alpha_mode
+    
+
+class AddActivePreview(bpy.types.Operator):
+    bl_idname = "object.add_active_preview"
+    bl_label = "Add Active Preview"
+    bl_description = ""
+    bl_options = {"REGISTER"}
+
+    def execute(self, context):
+        preview_add_to_selection()
+        return {"FINISHED"}
+        

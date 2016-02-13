@@ -21,7 +21,7 @@ bl_info = {
     "name": "Asset management",
     "description": "",
     "author": "Pistiwique, Pitiwazou",
-    "version": (1, 0, 0),
+    "version": (1, 0, 2),
     "blender": (2, 76, 0),
     "location": "View3D",
     "warning": "This addon is still in development.",
@@ -101,10 +101,10 @@ class AssetManagementPreferences(AddonPreferences):
 #            update=update_tools
 #            ) 
     
-    show_labels = BoolProperty(
-            default=True,
-            description="Display name asset in the preview"
-            )  
+#    show_labels = BoolProperty(
+#            default=True,
+#            description="Display name asset in the preview"
+#            )  
     
     # Custom object render 
 
@@ -413,8 +413,8 @@ class AssetManagementPreferences(AddonPreferences):
             row.label("Samples:")
             row.prop(self, "samples_value", text="")
             
-            row = layout.row(align=True)
-            row.prop(self, "show_labels", text="Show labels in the preview")
+#            row = layout.row(align=True)
+#            row.prop(self, "show_labels", text="Show labels in the preview")
             
 #            row = layout.row(align=True)
 #            row.label("Compute Device:") 
@@ -554,7 +554,7 @@ class AssetManagementPreferences(AddonPreferences):
                 row.prop(self, "glow", text="")
                 
                      
-        #Documentation
+        #Documentation 
         layout.prop(self, "AM_Tools_Documentation", text="Documentation", icon='QUESTION')
         if self.AM_Tools_Documentation:
 

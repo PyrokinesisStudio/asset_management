@@ -90,7 +90,7 @@ def register_AssetM_pcoll_preview():
             update=run_preview_add_to_selection
             )  
  
-    pcoll = bpy.utils.previews.new() # pcoll pour preview collection
+    pcoll = bpy.utils.previews.new()
     pcoll.AssetM_previews_dir = ""
     pcoll.AssetM_previews = ()
  

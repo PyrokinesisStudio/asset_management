@@ -19,225 +19,289 @@ Created by Pistiwique, Pitiwazou
 
 
 import bpy
+from bpy.props import (StringProperty,
+                       BoolProperty,
+                       EnumProperty,
+                       IntProperty)
 from .categories.utils import enum_blend_library, enum_blend_category
 from . preview_utils import update_asset_m_preview
 from . operators import background_alpha
 
+
 class AssetManagementCollectionGroup(bpy.types.PropertyGroup):
+ 
+# -----------------------------------------------------------------------------
+#   LIBRARY PROPERTIES
+# -----------------------------------------------------------------------------
 
-#---------------------- LIBRARIES ----------------------  
-
-    libraries = bpy.props.EnumProperty(
+    libraries = EnumProperty(
         items=enum_blend_library,
         update=update_asset_m_preview 
-        )  
+        ) 
     
-    change_library_name = bpy.props.StringProperty(
-        default=""
-        )  
-         
-    new_library_name = bpy.props.StringProperty(
+    rename_lib = BoolProperty(
+        default=False,
+        description="Rename the Library"
+        )
+
+    show_prefs_lib = BoolProperty(
+        default=False,
+        description = "Show the preferences of the Library"
+        )
+    
+    new_library_name = StringProperty(
         default=""
         )
-        
-    rename_library = bpy.props.BoolProperty(
+    
+    delete_library_choise = EnumProperty(
+        items=(('no', "No", ''),
+            ('yes', 'Yes', '')),
+            default='no'
+            )
+    
+    rename_library = BoolProperty(
         default=False,
         description = "Rename the current library"
         )
-    
-    delete_library_choise = bpy.props.EnumProperty(
-        items=(('no', "No", ''),
-                ('yes', 'Yes', '')),
-                default='no')
+            
+    change_library_name = StringProperty(
+        default=""
+        )  
 
-#---------------------- CATEGORIES ---------------------- 
+# -----------------------------------------------------------------------------
+#   CATEGORY PROPERTIES
+# -----------------------------------------------------------------------------
     
-    categories = bpy.props.EnumProperty(
+    categories = EnumProperty(
         items=enum_blend_category,
         update=update_asset_m_preview
-        )   
-     
-    change_category_name = bpy.props.StringProperty(
-        default=""
-        )  
-     
-    new_category_name = bpy.props.StringProperty(
-        default=""
-        )
-     
-    rename_category = bpy.props.BoolProperty(
-        default=False,
-        description = "Rename the current category"
-        )
-     
-    delete_category_choise = bpy.props.EnumProperty(
-        items=(('no', "No", ''),
-                ('yes', 'Yes', '')),
-                default='no')
-    
-    
-    options_enabled = bpy.props.BoolProperty(
-        default=False,
-        description="Add the active object in the asset library"
-        )
-     
-    new_name = bpy.props.StringProperty(
-        default=""
-        )
-    
-    replace_rename = bpy.props.EnumProperty(
-        items=(('replace', "Update", " Replace the object in Asset management by the active object"),
-               ('rename', "Rename", "Change the object's name to add in Asset management")),
-               default='rename')
-          
-    add_subsurf = bpy.props.BoolProperty(
-        default=False,
-        description="Thumbnail render with subsurf"
-        )   
-     
-    add_smooth = bpy.props.BoolProperty(
-        default=False,
-        description="Thumbnail render with smooth"
-        )
-    
-    render_running = bpy.props.BoolProperty(
-        default=False
-        )
-    
-    favorites_enabled = bpy.props.BoolProperty(
-        default=False,
-        update=update_asset_m_preview
-        )  
-    
-    without_import = bpy.props.BoolProperty(
-        default=False,
-        description = "Do not import the Asset into the scene"
-        )
-  
-    rename_asset = bpy.props.BoolProperty(
-        default=False,
-        description = "Rename the current Asset"
-        )
-
-    
-    group_name = bpy.props.StringProperty(
-        default=""
-        )
-        
-    Link_Scene_Asset_To_Faces = bpy.props.BoolProperty(
-        default=False,
-        description = "Copy an Asset to a selections of faces and Link/Unlink differents Assets "
-        )
-    
-    show_name_assets = bpy.props.BoolProperty(
-        default=False,
-        description = "Show the name of the current Asset"
         ) 
     
-    show_prefs_cat = bpy.props.BoolProperty(
+    rename_cat = BoolProperty(
+        default=False,
+        description="Rename the Category"
+        )
+        
+    show_prefs_cat = BoolProperty(
         default=False,
         description = "Show the preferences of the Category"
         ) 
         
-    show_prefs_lib = bpy.props.BoolProperty(
-        default=False,
-        description = "Show the preferences of the Library"
-        ) 
-        
-    render_list = []  
-    group_list = []
-    
-    material_render = bpy.props.BoolProperty(
-        default=True,
-        description="Disable to render with the objet materials"
+    new_category_name = StringProperty(
+        default=""
         )
+     
+    delete_category_choise = EnumProperty(
+        items=(('no', "No", ''),
+              ('yes', 'Yes', '')),
+              default='no'
+              )
     
-    documentation = bpy.props.BoolProperty(
+    rename_category = BoolProperty(
         default=False,
-        description="Documentation of the Asset Management Addon"
+        description = "Rename the current category"
         )
     
-    tools = bpy.props.BoolProperty(
+    change_category_name = StringProperty(
+        default=""
+        )  
+
+# -----------------------------------------------------------------------------
+#   ADDING OPTIONS PROPERTIES
+# -----------------------------------------------------------------------------
+    
+    options_enabled = BoolProperty(
         default=False,
-        description="Tools of the Asset Management Addon"
+        description="Add the active object in the asset library"
         )
     
-    debug_tools = bpy.props.BoolProperty(
-        default=False,
-        description="Tools To Prepare the Asset"
-        )
-    
-    prepare_asset = bpy.props.BoolProperty(
-        default=False,
-        description="Tools To Prepare the Asset"
-        )
-    
-    prepare_OGL = bpy.props.BoolProperty(
-        default=False,
-        description="Tools To Prepare the OpenGL Render"
-        )
-        
-        
-    with_main_parent = bpy.props.BoolProperty(
-        default=False,
-        description="Parent the objects to an Empty"
-        )
-        
-    custom_thumbnail = bpy.props.BoolProperty(
-        default=False,
-        description="Choose your custom thumbnail"
-        )
-        
-    custom_thumbnail_path = bpy.props.StringProperty(
-        default="",
-        subtype='FILE_PATH'
-        )
-        
-    render_type = bpy.props.EnumProperty(
+    render_type = EnumProperty(
         items=(('render', "Render", ""),
               ('opengl', "OpenGL", ""),
               ('image', "Image", "")),
               default='opengl'
               )
-
-    rename_lib = bpy.props.BoolProperty(
-        default=False,
-        description="Rename the Library"
+    
+    replace_rename = EnumProperty(
+        items=(('replace', "Update", " Replace the object in Asset management by the active object"),
+              ('rename', "Rename", "Change the object's name to add in Asset management")),
+              default='rename'
+              )
+    
+    group_name = StringProperty(
+        default=""
         )
-        
-    rename_cat = bpy.props.BoolProperty(
+    
+    with_main_parent = BoolProperty(
         default=False,
-        description="Rename the Category"
+        description="Parent the objects to an Empty"
         )
-        
-    background_alpha = bpy.props.EnumProperty(
+    
+    # ---------------- #          
+    #   RENDER MODE    #
+    # ---------------- #
+    
+    add_subsurf = BoolProperty(
+        default=False,
+        description="Thumbnail render with subsurf"
+        )   
+     
+    add_smooth = BoolProperty(
+        default=False,
+        description="Thumbnail render with smooth"
+        )
+    
+    material_render = BoolProperty(
+        default=True,
+        description="Disable to render with the objet materials"
+        )
+    
+    # ---------------- #          
+    #   OPENGL MODE    #
+    # ---------------- #
+    
+    background_alpha = EnumProperty(
         items=(('SKY', "SKY", ''),
               ('TRANSPARENT', "TRANSPARENT", '')),
               default='SKY',
-              update=background_alpha)
-              
-    cam_reso_X = bpy.props.IntProperty(
-        default=0
-        )
-        
-    cam_reso_Y = bpy.props.IntProperty(
-        default=0
-        )
+              update=background_alpha
+              )
     
-    ao_options = bpy.props.BoolProperty(
-        default=False,
-        description="Ambiant Occlusion Options"
-        )
-    
-    matcap_options = bpy.props.BoolProperty(
+    matcap_options = BoolProperty(
         default=True,
         description="Matcap Options"
         )
     
-    image_type = bpy.props.EnumProperty(
-        items=(('disk', "On disk", ''),
-            ('rendered', "Rendered", '')),
-            default='disk'
-            )
+    ao_options = BoolProperty(
+        default=False,
+        description="Ambiant Occlusion Options"
+        )    
     
-    render_name = bpy.props.StringProperty()
+    # ---------------- #          
+    #   IMAGES MODE    #
+    # ---------------- #
+    
+    image_type = EnumProperty(
+        items=(('disk', "On disk", ''),
+              ('rendered', "Rendered", '')),
+              default='disk'
+              )
+
+    custom_thumbnail_path = StringProperty(
+        default="",
+        subtype='FILE_PATH'
+        )
+    
+    custom_thumbnail = BoolProperty(
+        default=False,
+        description="Choose your custom thumbnail"
+        )
+     
+    render_name = StringProperty(
+        default=""
+        )
+    
+# -----------------------------------------------------------------------------
+#   PANEL OPTIONS PROPERTIES
+# -----------------------------------------------------------------------------
+    
+    favorites_enabled = BoolProperty(
+        default=False,
+        update=update_asset_m_preview
+        )  
+        
+    rename_asset = BoolProperty(
+        default=False,
+        description = "Rename the current Asset"
+        )
+    
+    new_name = StringProperty(
+        default=""
+        )
+    
+    without_import = BoolProperty(
+        default=False,
+        description = "Do not import the Asset into the scene"
+        )
+    
+    tools = BoolProperty(
+        default=False,
+        description="Tools of the Asset Management Addon"
+        )
+        
+    debug_tools = BoolProperty(
+        default=False,
+        description="Tools To Prepare the Asset"
+        )
+    
+    Link_Scene_Asset_To_Faces = BoolProperty(
+        default=False,
+        description = "Copy an Asset to a selections of faces and Link/Unlink differents Assets "
+        )
+    
+    prepare_asset = BoolProperty(
+        default=False,
+        description="Tools To Prepare the Asset"
+        )
+        
+    prepare_OGL = BoolProperty(
+        default=False,
+        description="Tools To Prepare the OpenGL Render"
+        )
+    
+
+# -----------------------------------------------------------------------------
+#   POPUP MENU PROPERTIES
+# -----------------------------------------------------------------------------
+
+
+    active_layer = BoolProperty(
+        default=True,
+        description="Import the asset in active layer"
+        )
+    
+    existing_material = BoolProperty(
+        default=True,
+        description="Use the existing materials if they ever in the datas"
+        )
+    
+    existing_group = BoolProperty(
+        default=True,
+        description="Use the existing groups if they ever in the datas"
+        )
+    
+    show_name_assets = BoolProperty(
+        default=False,
+        description = "Show the name of the current Asset"
+        )
+        
+    show_labels = BoolProperty(
+            default=True,
+            description="Display name asset in the preview"
+            )  
+     
+
+# -----------------------------------------------------------------------------
+#   OPERATORS PROPERTIES
+# -----------------------------------------------------------------------------
+
+    
+    render_running = BoolProperty(
+        default=False
+        )
+
+    render_list = []  
+    group_list = []
+
+    cam_reso_X = IntProperty(
+        default=0
+        )
+        
+    cam_reso_Y = IntProperty(
+        default=0
+        )
+ 
+#    documentation = BoolProperty(
+#        default=False,
+#        description="Documentation of the Asset Management Addon"
+#        )

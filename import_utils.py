@@ -74,20 +74,60 @@ def import_from_asset_management():
     blendfile = join(library_path, "blends", object_to_import + ".blend")
     source_files = [blendfile]
     scn = bpy.context.scene
+    
+#    main_groups = [gp.name for gp in bpy.data.groups]
            
     with bpy.data.libraries.load(blendfile) as (data_from, data_to):
         data_to.objects = data_from.objects
-        data_to.groups = data_from.groups
+        if data_from.groups:
+            data_to.groups = data_from.groups
+#            data_to.groups = data_from.groups
+#            if AM.existing_group:
+#                data_to.groups = [gp for gp in data_from.groups if gp not in main_groups]
+#            else:
+#                data_to.groups = data_from.groups
+        if data_from.materials:
+            if AM.existing_material:
+                materials = [mat for mat in data_from.materials]
 
     bpy.ops.object.select_all(action='DESELECT')
+    
+#    obj_group = [(obj.name, group) for obj in data_from.objects for group in data_from.groups]
 
     layer_obj = [(obj, layer) for obj in data_from.objects for layer in range(0, 20) if obj.layers[layer]]
- 
+    
+#    print(obj_group)
+    
     for item in layer_obj:
         scn.objects.link(item[0])
-        item[0].layers = [idx == item[1] for idx in range(20)]
+        if AM.existing_material and item[0].type == 'MESH':
+            if item[0].data.materials:
+                for mat in item[0].data.materials:
+                    for MAT in materials:
+                        if MAT in mat.name:
+                            item[0].material_slots[mat.name].material = bpy.data.materials[MAT]
+             
+            for material in bpy.data.materials:
+                if not material.users:
+                    bpy.data.materials.remove(material)
+                    
+#        if AM.existing_group:   
+#            if item[0].users_group:
+#                for gp in item[0].users_group:
+#                    for GP in groups:
+#                        if GP in gp.name:
+#                            bpy.context.scene.objects.active = item[0]
+#                            bpy.ops.group.objects_remove(group=gp.name)
+#                            bpy.ops.object.group_link(group=GP)
+                            
+                         
+        if not AM.active_layer:
+            item[0].layers = [idx == item[1] for idx in range(20)]
         item[0].select=True
-        bpy.context.scene.objects.active = item[0]
+        
+    bpy.context.scene.objects.active = layer_obj[0][0]
+        
+    if not AM.active_layer:
         for layers in layer_obj:
             bpy.context.scene.layers[layers[1]]=True
     

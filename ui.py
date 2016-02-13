@@ -34,9 +34,13 @@ class AM_UI(bpy.types.Panel):
  
     def draw(self, context):
         layout = self.layout
+        AM = context.window_manager.asset_m
         current_dir = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
         user_preferences = bpy.context.user_preferences
         addon_prefs = user_preferences.addons[current_dir].preferences
+        library_path = bpy.path.abspath(join(addon_prefs.asset_M_library_path))
+        thumbnails_path = join(library_path, AM.libraries, AM.categories, "icons")
+        favorites_path = join(library_path, AM.libraries, AM.categories, "Favorites")
         view = context.space_data
         fx_settings = view.fx_settings
         ssao_settings = fx_settings.ssao
@@ -47,14 +51,13 @@ class AM_UI(bpy.types.Panel):
 #---------------------- LIBRARIES ---------------------- 
 
             icons = load_icons()
-            AM = context.window_manager.asset_m
-            if isdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "icons")):
-                thumbnails_list = [f for f in listdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "icons")) if f.endswith(".png")]
-            if isdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "Favorites")):          
-                favorites_files = [f.split(".png")[0] for f in listdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "Favorites")) if f.endswith(".png")]  
-            
-            
- 
+
+            if isdir(favorites_path):          
+                favorites_files = [f.split(".png")[0] for f in listdir(favorites_path) if f.endswith(".png")]
+            else:
+                favorites_files = []
+                
+
             # Add/Remove
             row = layout.row(align=True) 
             if AM.libraries:
@@ -79,11 +82,9 @@ class AM_UI(bpy.types.Panel):
                     row = box.row(align=True) 
                     row.label("Rename:")
                     row.prop(AM, "change_library_name", text="")
-                    
-                    
-                libraries = [lib for lib in os.listdir(addon_prefs.asset_M_library_path) if isdir(addon_prefs.asset_M_library_path)]
+
                 if AM.change_library_name:
-                    if AM.change_library_name in libraries:
+                    if AM.change_library_name in [lib for lib in os.listdir(library_path) if isdir(library_path)]:
 
                         row = layout.row()
                         row.label("\" " + AM.change_library_name + " \" Already exist.", icon='ERROR')  
@@ -92,10 +93,9 @@ class AM_UI(bpy.types.Panel):
 
 #---------------------- CATEGORIES ---------------------- 
                     
-            if AM.libraries and isdir(join(addon_prefs.asset_M_library_path, AM.libraries)):
+            if AM.libraries and isdir(join(library_path, AM.libraries)):
                  
                 icons = load_icons()
-                AM = context.window_manager.asset_m
                  
                 # Add/Remove
                 row = layout.row(align=True) 
@@ -122,10 +122,9 @@ class AM_UI(bpy.types.Panel):
                         row = box.row(align=True) 
                         row.label("Rename:")
                         row.prop(AM, "change_category_name", text="")
-                 
-                categories = [cat for cat in os.listdir(join(addon_prefs.asset_M_library_path, AM.libraries)) if isdir(join(addon_prefs.asset_M_library_path, AM.libraries))]
+
                 if AM.change_category_name:
-                    if AM.change_category_name in categories:
+                    if AM.change_category_name in [cat for cat in os.listdir(join(library_path, AM.libraries)) if isdir(join(library_path, AM.libraries))]:
                         row = layout.row()
                         row.label("\" " + AM.change_category_name + " \" Already exist.", icon='ERROR')  
                     else:
@@ -139,6 +138,11 @@ class AM_UI(bpy.types.Panel):
                     object_list = [obj for obj in context.scene.objects if obj.select]
                     multi_object = False
                     is_subsurf=False
+                    if isdir(thumbnails_path):
+                        thumbnails_list = [f for f in listdir(thumbnails_path) if f.endswith(".png")]
+                    else:
+                        thumbnails_list = []
+                        
                     if len(object_list) >= 2:
                         asset_name = AM.group_name
                         multi_object = True
@@ -245,6 +249,7 @@ class AM_UI(bpy.types.Panel):
                                 ob = context.object
                                 box.prop(ob, "name", text="")
                             row = box.row()
+                            row.operator("object.cancel_panel_choise", text="Cancel", icon='X')
  
                 else:   
                     #Show Only Favoris
@@ -258,7 +263,7 @@ class AM_UI(bpy.types.Panel):
                     row = layout.row(align=True)  
                     sub = row.row()
                     sub.scale_y = 1.17 
-                    sub.template_icon_view(context.window_manager, "AssetM_previews", show_labels=True if addon_prefs.show_labels else False)
+                    sub.template_icon_view(context.window_manager, "AssetM_previews", show_labels=True if AM.show_labels else False)
                     
                     #Add/Remove Objects from library
                     col = row.column(align=True)
@@ -275,34 +280,50 @@ class AM_UI(bpy.types.Panel):
                         layout.operator("wm.console_toggle", text="Check/Hide Console")
                         
                     #Favoris
-                    if isdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "Favorites")):
-                        if favorites_files:
-                            if context.window_manager.AssetM_previews.split(".png")[0] in favorites_files:       
-                                col.operator("object.remove_from_favorites", text="", icon_value=favorites.icon_id)
-                            else:
-                                col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)   
+                    if favorites_files:
+                        if context.window_manager.AssetM_previews.split(".png")[0] in favorites_files:       
+                            col.operator("object.remove_from_favorites", text="", icon_value=favorites.icon_id)
                         else:
-                            col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)
-         
-                    #Show Name
-                    name = icons.get("name_asset")
-                    no_name = icons.get("no_name_asset")
+                            col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)   
+                    else:
+                        col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)
                     
-                    col.prop(AM, "show_name_assets", text="", icon_value=name.icon_id if AM.show_name_assets else no_name.icon_id)
+                    
+                    row = layout.row(align=True)
+                    row.scale_y = 1.1
+                    row.scale_x = 1.5
+                    row.operator("object.add_active_preview", text="", icon='TRIA_LEFT')
+                    row.scale_x = 0.8
+                    row.operator("object.add_active_preview", text="Click To Import")
+                    row.scale_x = 1.5
+                    row.operator("object.add_active_preview", text="", icon='TRIA_RIGHT')
+
+                    #Show Name
+#                    col.operator("view3d.properties_menu", text="", icon='SCRIPTWIN')
+                    
+#                    name = icons.get("name_asset")
+#                    no_name = icons.get("no_name_asset")
+#                    
+#                    col.prop(AM, "show_name_assets", text="", icon_value=name.icon_id if AM.show_name_assets else no_name.icon_id)
                     if AM.show_name_assets:
                         row = layout.row(align=True)
                         row.label("Name :")
          
                         sub = row.row()
                         sub.scale_x = 2.0
-                        sub.label(context.window_manager.AssetM_previews.split("GP_")[-1].split(".png")[0])
-         
+                        sub.label(context.window_manager.AssetM_previews.split(".png")[0])
+                       
+                    
                     #Name/Rename  
                     rename = icons.get("rename_asset")
                     no_rename = icons.get("no_rename_asset")
          
                     col.prop(AM, "rename_asset", text="", icon_value=rename.icon_id if AM.rename_asset else no_rename.icon_id)
                     if AM.rename_asset:
+                        if isdir(thumbnails_path):
+                            thumbnails_list = [f for f in listdir(thumbnails_path) if f.endswith(".png")]
+                        else:
+                            thumbnails_list = []
                         row = layout.row(align=True)
                         row.label("Rename :")
                         row.prop(AM, "new_name", text="")
@@ -321,7 +342,10 @@ class AM_UI(bpy.types.Panel):
                         col.prop(AM, "without_import", icon='LOCKED', icon_only=True)
                     else:
                         col.prop(AM, "without_import", icon='UNLOCKED', icon_only=True)
-
+                    
+                    #Properties menu
+                    col.operator("view3d.properties_menu", text="", icon='SCRIPTWIN')
+                    
                     #AM_tools
                     if AM.tools:
                         col.prop(AM, "tools", text="", icon='TRIA_UP') 
@@ -411,8 +435,7 @@ class AM_UI(bpy.types.Panel):
             layout.label("Define the library path", icon='ERROR')
             layout.label("in the addon preferences please.")
             layout.operator("screen.userpref_show", icon='PREFERENCES')
-
-
+      
 
 class AM_Tools(bpy.types.Panel):
     bl_label = "Asset Management"
@@ -422,9 +445,13 @@ class AM_Tools(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        AM = context.window_manager.asset_m
         current_dir = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
         user_preferences = bpy.context.user_preferences
         addon_prefs = user_preferences.addons[current_dir].preferences
+        library_path = bpy.path.abspath(join(addon_prefs.asset_M_library_path))
+        thumbnails_path = join(library_path, AM.libraries, AM.categories, "icons")
+        favorites_path = join(library_path, AM.libraries, AM.categories, "Favorites")
         view = context.space_data
         fx_settings = view.fx_settings
         ssao_settings = fx_settings.ssao
@@ -435,12 +462,11 @@ class AM_Tools(bpy.types.Panel):
 #---------------------- LIBRARIES ---------------------- 
  
             icons = load_icons()
-            AM = context.window_manager.asset_m
-            if isdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "icons")):
-                thumbnails_list = [f for f in listdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "icons")) if f.endswith(".png")]
-            if isdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "Favorites")):          
-                favorites_files = [f.split(".png")[0] for f in listdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "Favorites")) if f.endswith(".png")]  
  
+            if isdir(favorites_path):          
+                favorites_files = [f.split(".png")[0] for f in listdir(favorites_path) if f.endswith(".png")]
+            else:
+                favorites_files = []
  
  
             # Add/Remove
@@ -468,10 +494,8 @@ class AM_Tools(bpy.types.Panel):
                     row.label("Rename:")
                     row.prop(AM, "change_library_name", text="")
  
- 
-                libraries = [lib for lib in os.listdir(addon_prefs.asset_M_library_path) if isdir(addon_prefs.asset_M_library_path)]
                 if AM.change_library_name:
-                    if AM.change_library_name in libraries:
+                    if AM.change_library_name in [lib for lib in os.listdir(library_path) if isdir(library_path)]:
  
                         row = layout.row()
                         row.label("\" " + AM.change_library_name + " \" Already exist.", icon='ERROR')  
@@ -480,10 +504,9 @@ class AM_Tools(bpy.types.Panel):
  
 #---------------------- CATEGORIES ---------------------- 
  
-            if AM.libraries and isdir(join(addon_prefs.asset_M_library_path, AM.libraries)):
+            if AM.libraries and isdir(join(library_path, AM.libraries)):
  
                 icons = load_icons()
-                AM = context.window_manager.asset_m
  
                 # Add/Remove
                 row = layout.row(align=True) 
@@ -511,9 +534,8 @@ class AM_Tools(bpy.types.Panel):
                         row.label("Rename:")
                         row.prop(AM, "change_category_name", text="")
  
-                categories = [cat for cat in os.listdir(join(addon_prefs.asset_M_library_path, AM.libraries)) if isdir(join(addon_prefs.asset_M_library_path, AM.libraries))]
                 if AM.change_category_name:
-                    if AM.change_category_name in categories:
+                    if AM.change_category_name in [cat for cat in os.listdir(join(library_path, AM.libraries)) if isdir(join(library_path, AM.libraries))]:
                         row = layout.row()
                         row.label("\" " + AM.change_category_name + " \" Already exist.", icon='ERROR')  
                     else:
@@ -527,6 +549,11 @@ class AM_Tools(bpy.types.Panel):
                     object_list = [obj for obj in context.scene.objects if obj.select]
                     multi_object = False
                     is_subsurf=False
+                    if isdir(thumbnails_path):
+                        thumbnails_list = [f for f in listdir(thumbnails_path) if f.endswith(".png")]
+                    else:
+                        thumbnails_list = []
+ 
                     if len(object_list) >= 2:
                         asset_name = AM.group_name
                         multi_object = True
@@ -633,6 +660,7 @@ class AM_Tools(bpy.types.Panel):
                                 ob = context.object
                                 box.prop(ob, "name", text="")
                             row = box.row()
+                            row.operator("object.cancel_panel_choise", text="Cancel", icon='X')
  
                 else:   
                     #Show Only Favoris
@@ -646,7 +674,7 @@ class AM_Tools(bpy.types.Panel):
                     row = layout.row(align=True)  
                     sub = row.row()
                     sub.scale_y = 1.17 
-                    sub.template_icon_view(context.window_manager, "AssetM_previews", show_labels=True if addon_prefs.show_labels else False)
+                    sub.template_icon_view(context.window_manager, "AssetM_previews", show_labels=True if AM.show_labels else False)
  
                     #Add/Remove Objects from library
                     col = row.column(align=True)
@@ -663,27 +691,39 @@ class AM_Tools(bpy.types.Panel):
                         layout.operator("wm.console_toggle", text="Check/Hide Console")
  
                     #Favoris
-                    if isdir(join(addon_prefs.asset_M_library_path, AM.libraries, AM.categories, "Favorites")):
-                        if favorites_files:
-                            if context.window_manager.AssetM_previews.split(".png")[0] in favorites_files:       
-                                col.operator("object.remove_from_favorites", text="", icon_value=favorites.icon_id)
-                            else:
-                                col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)   
+                    if favorites_files:
+                        if context.window_manager.AssetM_previews.split(".png")[0] in favorites_files:       
+                            col.operator("object.remove_from_favorites", text="", icon_value=favorites.icon_id)
                         else:
-                            col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)
+                            col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)   
+                    else:
+                        col.operator("object.add_to_favorites", text="", icon_value=no_favorites.icon_id)
+ 
+ 
+                    row = layout.row(align=True)
+                    row.scale_y = 1.1
+                    row.scale_x = 1.5
+                    row.operator("object.add_active_preview", text="", icon='TRIA_LEFT')
+                    row.scale_x = 0.8
+                    row.operator("object.add_active_preview", text="Click To Import")
+                    row.scale_x = 1.5
+                    row.operator("object.add_active_preview", text="", icon='TRIA_RIGHT')
  
                     #Show Name
-                    name = icons.get("name_asset")
-                    no_name = icons.get("no_name_asset")
+#                    col.operator("view3d.properties_menu", text="", icon='SCRIPTWIN')
  
-                    col.prop(AM, "show_name_assets", text="", icon_value=name.icon_id if AM.show_name_assets else no_name.icon_id)
+#                    name = icons.get("name_asset")
+#                    no_name = icons.get("no_name_asset")
+#                    
+#                    col.prop(AM, "show_name_assets", text="", icon_value=name.icon_id if AM.show_name_assets else no_name.icon_id)
                     if AM.show_name_assets:
                         row = layout.row(align=True)
                         row.label("Name :")
  
                         sub = row.row()
                         sub.scale_x = 2.0
-                        sub.label(context.window_manager.AssetM_previews.split("GP_")[-1].split(".png")[0])
+                        sub.label(context.window_manager.AssetM_previews.split(".png")[0])
+ 
  
                     #Name/Rename  
                     rename = icons.get("rename_asset")
@@ -691,6 +731,10 @@ class AM_Tools(bpy.types.Panel):
  
                     col.prop(AM, "rename_asset", text="", icon_value=rename.icon_id if AM.rename_asset else no_rename.icon_id)
                     if AM.rename_asset:
+                        if isdir(thumbnails_path):
+                            thumbnails_list = [f for f in listdir(thumbnails_path) if f.endswith(".png")]
+                        else:
+                            thumbnails_list = []
                         row = layout.row(align=True)
                         row.label("Rename :")
                         row.prop(AM, "new_name", text="")
@@ -709,6 +753,9 @@ class AM_Tools(bpy.types.Panel):
                         col.prop(AM, "without_import", icon='LOCKED', icon_only=True)
                     else:
                         col.prop(AM, "without_import", icon='UNLOCKED', icon_only=True)
+ 
+                    #Properties menu
+                    col.operator("view3d.properties_menu", text="", icon='SCRIPTWIN')
  
                     #AM_tools
                     if AM.tools:
@@ -799,6 +846,38 @@ class AM_Tools(bpy.types.Panel):
             layout.label("Define the library path", icon='ERROR')
             layout.label("in the addon preferences please.")
             layout.operator("screen.userpref_show", icon='PREFERENCES')
+
+
+
+
+class Properties_Menu(Operator):
+    bl_idname = "view3d.properties_menu"
+    bl_label = "Properties Menu"
+ 
+    def execute(self, context):
+        return {'FINISHED'}
+ 
+    def invoke(self, context, event):
+ 
+        dpi_value = bpy.context.user_preferences.system.dpi
+ 
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value*3, height=100)
+ 
+ 
+    def draw(self, context):
+        layout = self.layout
+        AM = context.window_manager.asset_m
+ 
+        layout.label("Import")
+        #Active Layer    
+        layout.prop(AM, "active_layer", text="Use Active layer")
+        layout.prop(AM, "existing_material", text="Use Existing Materials")
+        layout.prop(AM, "existing_group", text="Use Existing Groups")
+ 
+        layout.label("Display")
+        layout.prop(AM, "show_name_assets", text="Show Preview's names")
+        layout.prop(AM, "show_labels", text="Show labels in the preview")
+
 
  
 class AM_Preview(Operator):
