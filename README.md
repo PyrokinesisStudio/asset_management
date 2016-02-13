@@ -1,3 +1,2 @@
 # asset_management
 
-test
