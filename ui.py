@@ -29,7 +29,7 @@ from . categories.operators import *
 #UI Panel
 class AM_UI(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_region_type = 'TOOLS'
     bl_label = "Asset Management"
  
     def draw(self, context):
