@@ -21,7 +21,7 @@ bl_info = {
     "name": "Asset management",
     "description": "",
     "author": "Pistiwique, Pitiwazou",
-    "version": (1, 0, 4),
+    "version": (1, 0, 0),
     "blender": (2, 76, 0),
     "location": "View3D",
     "warning": "This addon is still in development.",
